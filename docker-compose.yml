@@ -1,13 +1,11 @@
 version: '3.5'
 services:
-   ez-housemode-synchronizer:
-      build:
-        context: ./node-app
-      image: ghcr.io/bblacey/ez-housemode-synchronizer
-      network_mode: host
-      env_file:
-        - ./config.env
-      environment:
-        - NODE_ENV=production
-      container_name: ez-mode-sync
-      restart: unless-stopped
+  ez-housemode-synchronizer:
+    image: ghcr.io/bblacey/ez-housemode-synchronizer
+    network_mode: host
+    env_file:
+      - ./config.env
+    environment:
+      - NODE_ENV=production
+    container_name: ez-mode-sync
+    restart: unless-stopped

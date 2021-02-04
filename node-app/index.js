@@ -6,7 +6,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 // Track hubs for clean shutdown on exit
-const hubs = [];
+const hubs = {};
 
 // Retrieve the Vera serial, mqtt broker url and MIOS user credentials from the environment
 const mqttBrokerUrl = process.env.mqttBrokerUrl;
@@ -14,8 +14,8 @@ const veraSerial = process.env.veraSerial;
 const miosUser = process.env.miosUser;
 const miosPassword = process.env.miosPassword;
 
+// Parse the mqtt message for the new house mode
 function parseMQTTmessage(payload) {
-	// Parse the mqtt message for the new house mode
 	const veraEvent = JSON.parse(payload.toString());
 	const newMode = veraEvent.HMode.toString();
 	const oldMode = veraEvent.OldHMode.toString();
@@ -36,7 +36,7 @@ client.on('connect', () => {
 			shutdown();
 		}
 	});
-	// Log when Vera changes modes
+	// Log Vera mode changes
 	client.on('message', async (topic, payload) => {
 		const context = parseMQTTmessage(payload);
 		console.log(`\n* Vera ${veraSerial}: Changed  house mode (${context.oldMode} => ${context.newMode})`);
@@ -54,24 +54,26 @@ discoverEzloHubs(new EzloCloudResolver(miosUser, miosPassword), async (hub) => {
 	// Register an mqtt message handler to that will synchronize Vera modes with this Ezlo Hub
 	client.on('message', async (topic, payload) => {
 
-		// Change house house mode - hub will not actually change modes unless requested mode is not current mode
+		// Change the house house mode - a hub will not actually change modes unless the requested mode is not the current mode
+		// Ezlo Hubs default to waiting 30 seconds before changing from Home to Night, Away or Vacation and 
+		// setHouseMode enables App to asynchronousely wait until the hub completes the transition.
 		const context = parseMQTTmessage(payload);
 		try {
 			console.log(`+ Ezlo ${hub.identity}: Changing house mode (${context.oldMode} => ${context.newMode})`);
-			const mode = await hub.setHouseMode(context.newMode);
-			console.log(`- Ezlo ${hub.identity}: House mode is now ${mode}`);
+			const mode = await hub.setHouseMode(context.newMode); // Wait until hub finishes changing modes
+			console.log(`✓ Ezlo ${hub.identity}: House mode is now ${mode}`);
 		} catch(err) {
-			console.log(`   Failed to set house hode ${context.newMode} on hub ${hub.identity} - ${err}`);
+			console.log(`✖ Ezlo ${hub.identity}: Failed to set house mode ${context.newMode} - ${err}`);
 		}
 	});
 
 	// Track hubs for clean shutdown on exit
-	hubs.push(hub);
+	hubs[hub.identity] = hub;
 });
 
 function shutdown() {
     console.log('Disconnecting from ezlo hubs and mqtt broker');
-    Promise.all(hubs.map(hub => hub.disconnect()))
+    Promise.all(Object.values(hubs).map(hub => hub.disconnect()))
     .then(() => {
         client.end();
         process.exit();
