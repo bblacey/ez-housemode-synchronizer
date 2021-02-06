@@ -7,5 +7,5 @@ services:
       - ./config.env
     environment:
       - NODE_ENV=production
-    container_name: ez-mode-sync
+    container_name: ez-housemode-synchronizer
     restart: unless-stopped

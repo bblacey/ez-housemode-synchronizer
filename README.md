@@ -1,15 +1,15 @@
 # EZ-HouseMode-Synchronizer
 ![Continuous Integration](https://github.com/bblacey/ez-housemode-synchronizer/workflows/Continuous%20Integration/badge.svg)![Docker to ghcr.io](https://github.com/bblacey/ez-housemode-synchronizer/workflows/Docker%20to%20ghcr.io/badge.svg)
 
-Easy (EZ) Node.js app that propogates Vera House Mode Changes to the Ezlo hub(s) on the local area network.  For convenience, the app is deployed as a dockerized app.
+Easy (EZ) Node.js app that propogates Vera House Mode Changes to the Ezlo hub(s) on the local area network.  For convenience, the app is deployed as a dockerized app for Intel/AMD and ARM platforms.
 
 ## Motivation
-Example EZ-App to illustrate the simplicity of setting House Modes on Ezlo Hubs using the [ezlo-hub-kit](bblacey/ezlo-hub-kit) SDK.
+Example EZ-App to illustrate the simplicity of setting House Modes on Ezlo Hubs using the [ezlo-hub-kit](https://github.com/bblacey/ezlo-hub-kit) SDK.
 
 This EZ-App also appeals to Vera users that are transitioning from a Vera hub to one or more Ezlo hubs that rely on House Modes for automation.  This EZ-App bridges this transition gap until solutions like [Ezlo's Meshene](https://community.getvera.com/t/until-we-linux/213748/4?u=blacey) and/or [Reactor Multi System](https://community.getvera.com/t/preview-of-multi-system-reactor/216320?u=blacey) become available.
 
 ## How it works
-EZ-HouseModeManager subscribes to HouseMode1 MQTT messages broadcast by Vera.  The [Vera MQTT Plugin](jonferreira/vera-mqtt) enables a Vera to publish device-state change messages to MQTT. Users will need to confirm that their Vera MQTT Plugin "WatchDog" is configured to push HouseMode changes to MQTT. Upon receipt of the Vera HouseMode1 MQTT message, the Ezlo-HouseMode-Synchronizer sets the House Mode contained in the payload on each Ezlo Hub.
+EZ-HouseModeManager subscribes to HouseMode1 MQTT messages broadcast by Vera.  The [Vera MQTT Plugin](https://github.com/jonferreira/vera-mqtt) enables a Vera to publish device-state change messages to MQTT. Users will need to confirm that their Vera MQTT Plugin "WatchDog" is configured to push HouseMode changes to MQTT. Upon receipt of the Vera HouseMode1 MQTT message, the Ezlo-HouseMode-Synchronizer sets the House Mode contained in the payload on each Ezlo Hub.
 
 ## Usage
 1. Start the dockerized House Mode Synchronizer
@@ -60,23 +60,23 @@ Synchronizing HouseMode for: 70060095, architecture: esp32	, model: ATOM32	, fir
 ✓ Ezlo 70060017: House mode is now 1
 ✓ Ezlo 70060095: House mode is now 1
 ```
-* NOTE: You can simulate a House Mode transition by running a [simulation script](./test/simulate.sh) in another terminal window.  For example, you can simulate changing from Home to Night on Vera 50000999 using MQTT broker 192.168.0.104 as follows:
+* NOTE: You can simulate a House Mode transition by running a [simulation script](test/simulate.sh) in another terminal window.  For example, you can simulate changing from Home to Night on Vera 50000999 using MQTT broker 192.168.0.104 as follows:
 ```shell
-./simulate.sh 50000999 1 2 192.168.0.104
+./test/simulate.sh 50000999 1 2 192.168.0.104
 ```
-To use the simulate<Mode>.sh scripts, edit the [config.env](config.env) 
+To use the simulate<Mode>.sh scripts, update the [config.env](config.env) to use your MIOS portal username, password and MQTT broker URL.
 ### Production use
 
 To run the dockerized Easy House-Mode-Syncrhonizer as a persistent process you can use docker-compose (recommended) or run the docker container 'detached' as a background process.
 
-First, for either option, create or download [config.env](config.env) and edit the file to to use your MIOS portal username, password and MQTT broker URL.
+First, for either option, create or download [config.env](config.env) and edit the file to use your MIOS portal username, password and MQTT broker URL.
 
 #### *docker-compose* (recommended)
 For those users who prefer to use `docker-compose`, you can download the [docker-compose.yml](docker-compose.yml) and start the relay with.
 ```shell
 docker-compose up -d .
 ```
-Compose users may find this [GitHub gist](https://gist.github.com/bblacey/9414231d29132a1f40c38f8ec04a915d) useful.  It is a docker-compose that will start all EZ-Apps with in a single compose file.
+Compose users may find the [EZ-Apps](https://github.com/bblacey/ez-apps) github project useful.  It comprises a docker-compose file with unified config files need to run the EZ-App suite with a simple `docker-compose up -d`.
 
 #### *docker run --detatch* (alternative)
 Start the relay in detached mode.
